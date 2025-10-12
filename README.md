@@ -62,7 +62,7 @@ Make sure you have the following installed:
 
 ---
 
-## 🛠️ Setup Instructions
+## 🛠️ Setup Instructions (Local)
 
 ### 1️⃣ Clone the repository
 ```bash
