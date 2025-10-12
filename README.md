@@ -68,3 +68,48 @@ Make sure you have the following installed:
 ```bash
 git clone https://github.com/JeevanJyot55/authEncryption.git
 cd authEncryption
+```
+### 2️⃣ Create the database
+```bash
+brew services start postgresql
+psql postgres -c "CREATE DATABASE authencryption_db;"
+```
+### 3️⃣ Configure environment variables
+```bash
+brew services start postgresql
+psql postgres -c "CREATE DATABASE authencryption_db;"
+```
+### 4️⃣ Install dependencies and generate Prisma clients
+```bash
+# Auth Service
+cd auth-service
+npm install
+npx prisma generate
+
+# Customer Service
+cd ../customer-service
+npm install
+npx prisma generate
+```
+### 🔹 Start Auth Service
+```bash
+cd auth-service
+npm install
+npx prisma migrate reset --force
+npx prisma migrate dev --name init
+npm run dev
+```
+### 🔹 Start Customer Service
+```bash
+cd ../customer-service
+npm install
+npx prisma migrate reset --force
+npx prisma migrate dev --name init
+npm run dev
+```
+### 🔹 Start Frontend
+```bash
+cd ../frontend
+npm install
+npm run dev
+```
