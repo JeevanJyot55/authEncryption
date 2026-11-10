@@ -1,115 +1,186 @@
-# 🔐 authEncryption
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0F2027,50:203A43,100:2C5364&height=200&section=header&text=🔐%20authEncryption&fontSize=52&fontColor=ffffff&fontAlignY=38&desc=Microservice%20authentication%20with%20bcrypt%20%2B%20JWT&descSize=18&descAlignY=60&animation=fadeIn" width="100%" />
+</p>
 
-**authEncryption** is a full-stack, microservices-based application demonstrating secure user authentication, tokenization, and encryption.  
-It’s built using **Node.js**, **Express**, **Prisma**, **PostgreSQL**, and **React (Vite)** — following modern architectural principles and production-ready practices.
+<p align="center">
+  <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" />
+  <img src="https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white" />
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
+  <img src="https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white" />
+  <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" />
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" />
+  <img src="https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" />
+</p>
 
-The project is structured into three independent services:
-- **auth-service/** → Handles authentication, password hashing (bcrypt), and JWT token generation.  
-- **customer-service/** → Manages customer CRUD operations through protected routes.  
-- **frontend/** → React + Vite single-page application for users to register, log in, and manage customer data.
-
----
-
-## 🧱 Architecture Overview
-
-| Component | Description | Tech Stack |
-|------------|--------------|-------------|
-| **auth-service/** | Provides secure registration, login, and authentication APIs using bcrypt and JWT | Node.js, Express, Prisma, PostgreSQL |
-| **customer-service/** | Handles CRUD operations for customer records with access restricted via JWT validation | Node.js, Express, Prisma, PostgreSQL |
-| **frontend/** | React + Vite SPA that integrates both services with protected routes and API calls | React, Vite, Axios |
-
-All services communicate independently and can be deployed separately, connected through a shared PostgreSQL database.
+<p align="center">
+  <b>A full-stack, microservices-based app that shows how real products handle sign-up, login and protected data,<br/>built with independently deployable services, hashed credentials and stateless token auth.</b>
+</p>
 
 ---
 
-## 🧠 Core Concepts
+## ✨ Highlights
 
-### 🔹 Authentication Flow
-1. **User Registration** → User submits email & password to `auth-service/register`.  
-2. **Password Encryption** → Passwords are hashed using **bcrypt** before being stored.  
-3. **Login** → Credentials verified via `auth-service/login`.  
-4. **JWT Token Issuance** → Upon successful login, a **JWT token** is generated and returned to the frontend.  
-5. **Protected Routes** → `customer-service` verifies JWT before allowing CRUD operations.
-
-### 🔹 Encryption & Security
-- **bcrypt** → For secure one-way password hashing.  
-- **JWT** → For stateless session management and route protection.  
-- **Environment Variables** → Database credentials and JWT secrets are stored securely in `.env` files.  
-- **Input Validation** → API inputs are validated before database interaction.  
+- 🧩 **Two independent services:** authentication and customer data live in separate Express apps, each with its own Prisma schema and migrations
+- 🔑 **Industry-standard credential storage:** passwords are hashed with **bcrypt** (10 salt rounds) and never stored or returned in plain text
+- 🎟️ **Stateless sessions:** login issues a signed **JWT** (1-hour expiry) that every protected route verifies, so no server-side session store is needed
+- 🛡️ **Protected CRUD:** the customer service rejects any request without a valid token
+- ⚛️ **Typed React frontend:** a TypeScript + Vite + Tailwind SPA with login, register and full customer management pages
+- ☁️ **Cloud-ready:** includes a `render.yaml` blueprint for deploying both services and a managed Postgres database to Render
 
 ---
 
-## 🌍 Future Improvements & Deployment
+## 🏗️ Architecture
 
-In future versions, the goal is to:
-- ✅ Containerize the full stack using **Docker Compose** for one-command deployment.  
-- ☁️ Deploy all services to **Google Cloud Run** or **AWS ECS** for scalability.  
-- 🔐 Integrate **OAuth2** or **Google Sign-In** for seamless authentication.  
-- 🧑‍💻 Add **Role-Based Access Control (RBAC)** for advanced authorization logic.  
-- 📊 Implement **monitoring and logging** using Prometheus or Grafana.  
+```mermaid
+flowchart LR
+    U[👤 User] --> F[⚛️ React + Vite SPA]
+    F -- "register / login" --> A[🔐 auth-service<br/>Express · bcrypt · JWT<br/>:4000]
+    A -- "JWT" --> F
+    F -- "Authorization: Bearer &lt;JWT&gt;" --> C[📇 customer-service<br/>Express · JWT guard<br/>:3000]
+    A --> DB[(🐘 PostgreSQL)]
+    C --> DB
+```
 
-These steps will move `authEncryption` toward a production-ready, cloud-native application architecture.
-
----
-
-## ⚙️ Prerequisites
-
-Make sure you have the following installed:
-- [Node.js](https://nodejs.org/) ≥ 18  
-- [npm](https://www.npmjs.com/) ≥ 9 (or Yarn)  
-- [PostgreSQL](https://www.postgresql.org/) (local or managed instance)  
-- [Git](https://git-scm.com/)
+| Service | Responsibility | Tech |
+|---|---|---|
+| **`auth-service/`** | Registration, login, password hashing, token issuing and `/me` identity lookup | Node.js, Express, TypeScript, Prisma, bcrypt, jsonwebtoken |
+| **`customer-service/`** | Create, read, update and delete customer records behind JWT verification | Node.js, Express, TypeScript, Prisma |
+| **`frontend/`** | SPA with auth pages, protected routes and customer list/create/edit views | React, TypeScript, Vite, Tailwind CSS, Axios |
 
 ---
 
-## 🛠️ Setup Instructions (Local)
+## 🔄 Authentication Flow
 
-### 1️⃣ Clone the repository
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant A as auth-service
+    participant C as customer-service
+    participant DB as PostgreSQL
+
+    U->>F: Enter email + password
+    F->>A: POST /register or /login
+    A->>DB: Store / look up bcrypt hash
+    A-->>F: Signed JWT (expires in 1h)
+    F->>C: GET /customers + Bearer token
+    C->>C: jwt.verify(token)
+    C->>DB: Query customers
+    C-->>F: 200 OK + data
+```
+
+---
+
+## 📡 API Reference
+
+<details>
+<summary><b>auth-service</b> (default port <code>4000</code>)</summary>
+
+| Method | Route | Description |
+|---|---|---|
+| `POST` | `/register` | Create an account; hashes the password and returns a JWT |
+| `POST` | `/login` | Verify credentials with `bcrypt.compare` and return a JWT |
+| `GET` | `/me` | Return the user behind the supplied token |
+
+</details>
+
+<details>
+<summary><b>customer-service</b> (default port <code>3000</code>, all routes require a JWT)</summary>
+
+| Method | Route | Description |
+|---|---|---|
+| `GET` | `/customers` | List all customers |
+| `GET` | `/customers/:id` | Get one customer |
+| `POST` | `/customers` | Create a customer |
+| `PUT` | `/customers/:id` | Update a customer |
+| `DELETE` | `/customers/:id` | Delete a customer |
+
+</details>
+
+### 🗃️ Data Models
+
+```prisma
+model User {                         model Customer {
+  id           String   @id            id        String   @id
+  email        String   @unique        name      String
+  passwordHash String                  email     String   @unique
+  createdAt    DateTime                phone     String?
+}                                      createdAt DateTime
+                                       updatedAt DateTime
+                                     }
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- [Node.js](https://nodejs.org/) 18+ and npm 9+
+- [PostgreSQL](https://www.postgresql.org/) (local or hosted)
+
+### 1. Clone and create the database
 ```bash
 git clone https://github.com/JeevanJyot55/authEncryption.git
 cd authEncryption
-```
-### 2️⃣ Create the database
-```bash
-brew services start postgresql
 psql postgres -c "CREATE DATABASE authencryption_db;"
 ```
-### 3️⃣ Configure environment variables
-```bash
-brew services start postgresql
-psql postgres -c "CREATE DATABASE authencryption_db;"
-```
-### 4️⃣ Install dependencies and generate Prisma clients
-```bash
-# Auth Service
-cd auth-service
-npm install
-npx prisma generate
 
-# Customer Service
-cd ../customer-service
-npm install
-npx prisma generate
+### 2. Configure environment variables
+Create a `.env` file in **both** `auth-service/` and `customer-service/`:
+```env
+DATABASE_URL="postgresql://<user>:<password>@localhost:5432/authencryption_db"
+JWT_SECRET="<a-long-random-string>"   # must be identical in both services
 ```
-### 🔹 Start Auth Service
+And `frontend/.env`:
+```env
+VITE_AUTH_URL="http://localhost:4000"
+VITE_API_URL="http://localhost:3000"
+```
+
+### 3. Run the services (three terminals)
 ```bash
-cd auth-service
-npm install
-npx prisma migrate reset --force
-npx prisma migrate dev --name init
-npm run dev
+# Terminal 1: auth service
+cd auth-service && npm install && npx prisma migrate dev && npm run dev
+
+# Terminal 2: customer service
+cd customer-service && npm install && npx prisma migrate dev && npm run dev
+
+# Terminal 3: frontend
+cd frontend && npm install && npm run dev
 ```
-### 🔹 Start Customer Service
-```bash
-cd ../customer-service
-npm install
-npx prisma migrate reset --force
-npx prisma migrate dev --name init
-npm run dev
+Open **http://localhost:5173**, register an account and start managing customers.
+
+---
+
+## 📁 Project Structure
+
 ```
-### 🔹 Start Frontend
-```bash
-cd ../frontend
-npm install
-npm run dev
+authEncryption/
+├── auth-service/          # Express + Prisma authentication API
+│   ├── prisma/            # User schema + migrations
+│   └── src/index.ts
+├── customer-service/      # Express + Prisma protected CRUD API
+│   ├── prisma/            # Customer schema + migrations
+│   └── src/index.ts
+├── frontend/              # React + TypeScript + Vite + Tailwind SPA
+│   └── src/{pages,components,services}
+└── render.yaml            # Render deployment blueprint
 ```
+
+---
+
+## 🗺️ Roadmap
+
+- [ ] 🐳 Docker Compose for one-command local setup
+- [ ] 🔁 Refresh tokens and token revocation
+- [ ] 🔐 OAuth2 / Google Sign-In
+- [ ] 👥 Role-based access control (RBAC)
+- [ ] 🚦 Rate limiting on auth endpoints
+- [ ] ☁️ Deploy to Google Cloud Run or AWS ECS
+- [ ] 📊 Monitoring with Prometheus + Grafana
+
+---
+
+<p align="center">
+  Built by <a href="https://github.com/JeevanJyot55"><b>Jeevan Jyot Singh</b></a> · <a href="https://www.linkedin.com/in/jeevanjyotsingh">LinkedIn</a> · <a href="https://jeevanjyot55.github.io">Portfolio</a>
+</p>
